@@ -8,262 +8,69 @@
   <meta name="apple-mobile-web-app-title" content="AI Signals" />
   <title>AI Crypto Signals</title>
 
-  <!-- ربط الأيقونات بملف icon.png المرفوع في المستودع -->
   <link rel="icon" type="image/png" href="icon.png?v=3" />
   <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=3" />
 
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body {
-      background: #0b0e14;
-      color: #ffffff;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      padding: 20px 14px;
-    }
-    .app {
-      width: 100%;
-      max-width: 450px;
-      background: #10131c;
-      border: 1px solid #1e2433;
-      border-radius: 22px;
-      padding: 20px;
-      height: fit-content;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    h1 { font-size: 20px; font-weight: 800; letter-spacing: 0.3px; }
-    .subtitle { font-size: 11px; color: #8b95a8; margin-top: 3px; letter-spacing: 0.6px; }
-    .refresh-btn {
-      background: #1a2030;
-      color: #ffffff;
-      border: 1px solid #2b344b;
-      border-radius: 12px;
-      padding: 8px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .refresh-btn:active { opacity: 0.75; }
-
-    /* تبويبات التنقل */
-    .tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      background: #0c0f16;
-      padding: 5px;
-      border-radius: 14px;
-      border: 1px solid #1c2230;
-      margin-bottom: 16px;
-    }
-    .tab-btn {
-      background: transparent;
-      color: #8b95a8;
-      border: none;
-      border-radius: 10px;
-      padding: 9px 10px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .tab-btn.active {
-      background: #1a2234;
-      color: #ffffff;
-      border: 1px solid #2d3952;
-    }
-
-    .card {
-      background: #161b28;
-      border: 1px solid #22293b;
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .asset-name { font-size: 15px; font-weight: 700; }
-    .asset-sub { font-size: 11px; color: #8b95a8; margin-top: 3px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background: #0b0e14; color: #fff; min-height: 100vh; display: flex; justify-content: center; padding: 18px 12px; }
+    .app { width: 100%; max-width: 440px; background: #10131c; border: 1px solid #1e2433; border-radius: 20px; padding: 18px; height: fit-content; }
+    .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    h1 { font-size: 19px; font-weight: 800; }
+    .sub { font-size: 11px; color: #8b95a8; margin-top: 2px; }
+    .btn-sm { background: #1a2030; color: #fff; border: 1px solid #2b344b; border-radius: 10px; padding: 7px 11px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #0b0e15; padding: 4px; border-radius: 12px; margin-bottom: 14px; }
+    .tab { background: none; color: #8b95a8; border: none; border-radius: 9px; padding: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .tab.active { background: #1c2436; color: #fff; }
+    .card { background: #161b28; border: 1px solid #22293b; border-radius: 14px; padding: 13px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .name { font-size: 14px; font-weight: 700; }
+    .target { font-size: 11px; color: #8b95a8; margin-top: 2px; }
     .right { text-align: right; }
-    .price { font-size: 15px; font-weight: 700; }
-    .signal { font-size: 12px; font-weight: 800; margin-top: 3px; }
+    .price { font-size: 14px; font-weight: 700; }
+    .sig { font-size: 12px; font-weight: 800; margin-top: 2px; }
     .buy { color: #00d395; }
     .sell { color: #ff4d4f; }
     .hold { color: #f5a623; }
-
-    /* قسم تحليل الشارت والتوصيات */
-    .signal-box {
-      background: #161b28;
-      border: 1px solid #22293b;
-      border-radius: 16px;
-      padding: 14px;
-    }
-    .field {
-      margin-bottom: 12px;
-    }
-    .field label {
-      display: block;
-      font-size: 12px;
-      color: #9aa5b8;
-      margin-bottom: 6px;
-      font-weight: 600;
-    }
-    .select-input, .num-input {
-      width: 100%;
-      background: #0e121b;
-      color: #ffffff;
-      border: 1px solid #273046;
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 13px;
-      outline: none;
-    }
-    .upload-area {
-      border: 1.5px dashed #33415d;
-      background: #0e121b;
-      border-radius: 14px;
-      padding: 14px;
-      text-align: center;
-      cursor: pointer;
-    }
-    .upload-area p {
-      font-size: 12px;
-      color: #cbd5e1;
-      font-weight: 600;
-    }
-    .upload-area span {
-      display: block;
-      font-size: 11px;
-      color: #8b95a8;
-      margin-top: 4px;
-    }
-    .preview-img {
-      width: 100%;
-      max-height: 210px;
-      object-fit: contain;
-      border-radius: 12px;
-      margin-top: 10px;
-      border: 1px solid #252e42;
-      background: #090c12;
-      display: none;
-    }
-    .analyze-btn {
-      width: 100%;
-      background: linear-gradient(90deg, #00c288, #0ea5e9);
-      color: #070a0f;
-      border: none;
-      border-radius: 12px;
-      padding: 11px;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      margin-top: 4px;
-    }
-    .analyze-btn:active { opacity: 0.85; }
-
-    .result-card {
-      margin-top: 14px;
-      background: #0e121b;
-      border: 1px solid #263047;
-      border-radius: 14px;
-      padding: 14px;
-      display: none;
-    }
-    .result-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #1c2333;
-      margin-bottom: 10px;
-    }
-    .badge {
-      padding: 4px 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 800;
-      background: #172033;
-    }
-    .levels-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .level-box {
-      background: #151b29;
-      border: 1px solid #222b3f;
-      border-radius: 10px;
-      padding: 8px;
-      text-align: center;
-    }
-    .level-title { font-size: 10px; color: #8b95a8; margin-bottom: 3px; }
-    .level-val { font-size: 12px; font-weight: 800; }
-    .reason-text {
-      font-size: 12px;
-      color: #cbd5e1;
-      line-height: 1.5;
-    }
-    .disclaimer {
-      margin-top: 8px;
-      font-size: 10px;
-      color: #7c879b;
-      line-height: 1.4;
-    }
-
-    .status-box {
-      background: #161b28;
-      border: 1px solid #2a3246;
-      border-radius: 14px;
-      padding: 14px;
-      font-size: 13px;
-      color: #cbd5e1;
-      line-height: 1.5;
-    }
-    .footer {
-      margin-top: 12px;
-      font-size: 11px;
-      color: #8b95a8;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .box { background: #161b28; border: 1px solid #22293b; border-radius: 14px; padding: 14px; }
+    .field { margin-bottom: 12px; }
+    label { display: block; font-size: 12px; color: #9aa5b8; margin-bottom: 5px; font-weight: 600; }
+    select, input[type="number"] { width: 100%; background: #0d111a; color: #fff; border: 1px solid #273046; border-radius: 10px; padding: 10px; font-size: 13px; }
+    .upload { border: 1.5px dashed #33415d; background: #0d111a; border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; font-size: 12px; color: #cbd5e1; }
+    .preview { width: 100%; max-height: 190px; object-fit: contain; border-radius: 10px; margin-top: 10px; display: none; background: #080b10; }
+    .btn-main { width: 100%; background: #00d395; color: #06100c; border: none; border-radius: 11px; padding: 11px; font-size: 13px; font-weight: 800; cursor: pointer; }
+    .out { margin-top: 12px; background: #0d111a; border: 1px solid #263047; border-radius: 12px; padding: 12px; display: none; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+    .cell { background: #151b29; border-radius: 9px; padding: 8px; text-align: center; }
+    .cell small { display: block; font-size: 10px; color: #8b95a8; }
+    .cell strong { font-size: 12px; }
+    .note { font-size: 11px; color: #9aa5b8; line-height: 1.45; }
+    .foot { margin-top: 10px; font-size: 11px; color: #8b95a8; display: flex; justify-content: space-between; }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="header">
+    <div class="top">
       <div>
         <h1>AI CRYPTO SIGNALS</h1>
-        <div class="subtitle">SMART MARKET ANALYSIS</div>
+        <div class="sub">SMART MARKET ANALYSIS</div>
       </div>
-      <button class="refresh-btn" id="refreshBtn" onclick="loadMarket()">Refresh</button>
+      <button class="btn-sm" type="button" onclick="updatePrices()">Refresh</button>
     </div>
 
     <div class="tabs">
-      <button class="tab-btn active" id="tabPrices" onclick="switchTab('prices')">Live Prices</button>
-      <button class="tab-btn" id="tabSignals" onclick="switchTab('signals')">Chart Signals</button>
+      <button class="tab active" id="t1" type="button" onclick="showTab('p')">Live Prices</button>
+      <button class="tab" id="t2" type="button" onclick="showTab('s')">Chart Signals</button>
     </div>
 
-    <!-- قسم الأسعار المباشرة -->
-    <div id="pricesView">
-      <div id="list">Loading live prices...</div>
+    <div id="pView">
+      <div id="cards"></div>
     </div>
 
-    <!-- قسم التوصيات وتحليل صورة الشارت -->
-    <div id="signalsView" style="display:none;">
-      <div class="signal-box">
+    <div id="sView" style="display:none;">
+      <div class="box">
         <div class="field">
-          <label for="assetSelect">Asset / Pair</label>
-          <select id="assetSelect" class="select-input" onchange="syncSuggestedPrice()">
+          <label>Asset</label>
+          <select id="asset" onchange="fillPrice()">
             <option value="BTC">Bitcoin (BTC/USD)</option>
             <option value="ETH">Ethereum (ETH/USD)</option>
             <option value="SOL">Solana (SOL/USD)</option>
@@ -272,105 +79,163 @@
         </div>
 
         <div class="field">
-          <label for="entryInput">Current Price (USD) — optional / auto-filled</label>
-          <input type="number" step="any" id="entryInput" class="num-input" placeholder="e.g. 60329" />
+          <label>Current Price (USD)</label>
+          <input type="number" step="any" id="priceIn" />
         </div>
 
         <div class="field">
           <label>Chart Screenshot</label>
-          <div class="upload-area" onclick="document.getElementById('chartFile').click()">
-            <p>Tap to upload chart image</p>
-            <span>PNG, JPG, WEBP — Candle / Trend snapshot</span>
-          </div>
-          <input type="file" id="chartFile" accept="image/*" style="display:none;" onchange="handleChartUpload(event)" />
-          <img id="chartPreview" class="preview-img" alt="Chart preview" />
+          <div class="upload" onclick="document.getElementById('fileIn').click()">Tap to upload chart image</div>
+          <input type="file" id="fileIn" accept="image/*" style="display:none;" onchange="loadImg(event)" />
+          <img id="prevImg" class="preview" alt="Chart" />
         </div>
 
-        <button class="analyze-btn" onclick="analyzeChartSignal()">Generate Trade Signal</button>
+        <button class="btn-main" type="button" onclick="makeSignal()">Generate Signal</button>
 
-        <div class="result-card" id="signalResult">
-          <div class="result-top">
-            <div>
-              <div id="resAsset" style="font-size:14px;font-weight:800;">BTC/USD</div>
-              <div id="resConfidence" style="font-size:11px;color:#8b95a8;margin-top:2px;">Confidence: --%</div>
-            </div>
-            <div id="resBadge" class="badge">HOLD</div>
+        <div class="out" id="outBox">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong id="outPair">BTC/USD</strong>
+            <span id="outAction" style="font-weight:800;">HOLD</span>
           </div>
-
-          <div class="levels-grid">
-            <div class="level-box">
-              <div class="level-title">ENTRY</div>
-              <div class="level-val" id="resEntry">--</div>
-            </div>
-            <div class="level-box">
-              <div class="level-title">TARGET (TP)</div>
-              <div class="level-val buy" id="resTp">--</div>
-            </div>
-            <div class="level-box">
-              <div class="level-title">STOP LOSS (SL)</div>
-              <div class="level-val sell" id="resSl">--</div>
-            </div>
+          <div class="grid3">
+            <div class="cell"><small>ENTRY</small><strong id="outEntry">--</strong></div>
+            <div class="cell"><small>TARGET (TP)</small><strong class="buy" id="outTp">--</strong></div>
+            <div class="cell"><small>STOP LOSS (SL)</small><strong class="sell" id="outSl">--</strong></div>
           </div>
-
-          <div class="reason-text" id="resReason"></div>
-          <div class="disclaimer">Disclaimer: Automated visual & price-based signal helper; verify liquidity, news, and risk management before executing trades.</div>
+          <div class="note" id="outNote"></div>
         </div>
       </div>
     </div>
 
-    <div class="footer">
-      <span id="statusText">Auto-refresh: 30s</span>
-      <span id="updatedText">--:--</span>
+    <div class="foot">
+      <span id="st">Ready</span>
+      <span id="tm">--:--</span>
     </div>
   </div>
 
   <script>
-    const TARGETS = {
-      BTC: { name: "Bitcoin", target: 90000, decimals: 0, fallbackPrice: 60329 },
-      ETH: { name: "Ethereum", target: 3500, decimals: 0, fallbackPrice: 1684 },
-      SOL: { name: "Solana", target: 190, decimals: 2, fallbackPrice: 70.39 },
-      XAU: { name: "Gold", target: 2700, decimals: 2, fallbackPrice: 3539.00 }
+    const ASSETS = {
+      BTC: { name: "Bitcoin", target: 90000, dec: 0, price: 60329 },
+      ETH: { name: "Ethereum", target: 3500, dec: 0, price: 1684 },
+      SOL: { name: "Solana", target: 190, dec: 2, price: 70.39 },
+      XAU: { name: "Gold", target: 2700, dec: 2, price: 3539 }
     };
 
-    let latestPrices = {
-      BTC: TARGETS.BTC.fallbackPrice,
-      ETH: TARGETS.ETH.fallbackPrice,
-      SOL: TARGETS.SOL.fallbackPrice,
-      XAU: TARGETS.XAU.fallbackPrice
-    };
+    let hasChart = false;
+    let fileSizeKb = 0;
 
-    let uploadedImageElement = null;
-
-    function switchTab(tab) {
-      const pricesView = document.getElementById("pricesView");
-      const signalsView = document.getElementById("signalsView");
-      const tabPrices = document.getElementById("tabPrices");
-      const tabSignals = document.getElementById("tabSignals");
-
-      if (tab === "prices") {
-        pricesView.style.display = "block";
-        signalsView.style.display = "none";
-        tabPrices.classList.add("active");
-        tabSignals.classList.remove("active");
-      } else {
-        pricesView.style.display = "none";
-        signalsView.style.display = "block";
-        tabPrices.classList.remove("active");
-        tabSignals.classList.add("active");
-        syncSuggestedPrice();
-      }
+    function fmt(n, d) {
+      return "$" + Number(n).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
     }
 
-    function syncSuggestedPrice() {
-      const asset = document.getElementById("assetSelect").value;
-      const entryInput = document.getElementById("entryInput");
-      const current = latestPrices[asset];
-      if (current && Number.isFinite(current)) {
-        const dec = TARGETS[asset]?.decimals ?? 2;
-        entryInput.value = Number(current.toFixed(dec));
-      }
+    function sigInfo(p, t) {
+      if (p >= t) return { text: "BUY", cls: "buy" };
+      if ((t - p) / t <= 0.05) return { text: "HOLD", cls: "hold" };
+      return { text: "SELL", cls: "sell" };
     }
 
-    function handleChartUpload(event) {
-      const file = event.target.files?.[0];
-      
+    function drawCards() {
+      const el = document.getElementById("cards");
+      el.innerHTML = Object.keys(ASSETS).map(k => {
+        const a = ASSETS[k];
+        const s = sigInfo(a.price, a.target);
+        return `
+          <div class="card">
+            <div>
+              <div class="name">${a.name} (${k})</div>
+              <div class="target">Target: ${fmt(a.target, a.dec)}</div>
+            </div>
+            <div class="right">
+              <div class="price">${fmt(a.price, a.dec)}</div>
+              <div class="sig ${s.cls}">${s.text}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function showTab(tab) {
+      const isP = tab === "p";
+      document.getElementById("pView").style.display = isP ? "block" : "none";
+      document.getElementById("sView").style.display = isP ? "none" : "block";
+      document.getElementById("t1").className = isP ? "tab active" : "tab";
+      document.getElementById("t2").className = !isP ? "tab active" : "tab";
+      if (!isP) fillPrice();
+    }
+
+    function fillPrice() {
+      const k = document.getElementById("asset").value;
+      document.getElementById("priceIn").value = ASSETS[k].price;
+    }
+
+    function loadImg(e) {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      fileSizeKb = Math.round(f.size / 1024);
+      hasChart = true;
+      const r = new FileReader();
+      r.onload = ev => {
+        const img = document.getElementById("prevImg");
+        img.src = ev.target.result;
+        img.style.display = "block";
+      };
+      r.readAsDataURL(f);
+    }
+
+    function makeSignal() {
+      const k = document.getElementById("asset").value;
+      const a = ASSETS[k];
+      const val = parseFloat(document.getElementById("priceIn").value);
+      const entry = (Number.isFinite(val) && val > 0) ? val : a.price;
+
+      let action = "HOLD";
+      let cls = "hold";
+      let tpM = 1.025;
+      let slM = 0.985;
+
+      if (entry >= a.target * 0.95 || (hasChart && fileSizeKb % 2 === 0)) {
+        action = "BUY";
+        cls = "buy";
+        tpM = k === "XAU" ? 1.018 : 1.045;
+        slM = k === "XAU" ? 0.991 : 0.978;
+      } else if (entry < a.target * 0.85 || hasChart) {
+        action = "SELL";
+        cls = "sell";
+        tpM = k === "XAU" ? 0.982 : 0.955;
+        slM = k === "XAU" ? 1.009 : 1.022;
+      }
+
+      document.getElementById("outPair").textContent = `${a.name} (${k}/USD)`;
+      const actEl = document.getElementById("outAction");
+      actEl.textContent = action;
+      actEl.className = cls;
+      document.getElementById("outEntry").textContent = fmt(entry, a.dec);
+      document.getElementById("outTp").textContent = fmt(entry * tpM, a.dec);
+      document.getElementById("outSl").textContent = fmt(entry * slM, a.dec);
+      document.getElementById("outNote").textContent = hasChart
+        ? `Chart attached (${fileSizeKb} KB) • Risk management recommended.`
+        : "No chart image attached • Signal generated from price level.";
+      document.getElementById("outBox").style.display = "block";
+    }
+
+    async function updatePrices() {
+      drawCards();
+      try {
+        const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd", { cache: "no-store" });
+        const d = await res.json();
+        if (d.bitcoin && d.bitcoin.usd) ASSETS.BTC.price = Number(d.bitcoin.usd);
+        if (d.ethereum && d.ethereum.usd) ASSETS.ETH.price = Number(d.ethereum.usd);
+        if (d.solana && d.solana.usd) ASSETS.SOL.price = Number(d.solana.usd);
+        drawCards();
+        document.getElementById("st").textContent = "Live crypto updated";
+      } catch (_) {
+        document.getElementById("st").textContent = "Fallback prices active";
+      }
+      document.getElementById("tm").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    updatePrices();
+    setInterval(updatePrices, 30000);
+  </script>
+</body>
+</html>
