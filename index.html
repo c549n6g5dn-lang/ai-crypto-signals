@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Crypto Signals</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      background: #0b0e14;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px 14px;
+    }
+    .app {
+      width: 100%;
+      max-width: 440px;
+      background: #10131c;
+      border: 1px solid #1e2433;
+      border-radius: 22px;
+      padding: 20px;
+      height: fit-content;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    h1 { font-size: 20px; font-weight: 800; letter-spacing: 0.3px; }
+    .subtitle { font-size: 11px; color: #8b95a8; margin-top: 3px; letter-spacing: 0.6px; }
+    .refresh-btn {
+      background: #1a2030;
+      color: #ffffff;
+      border: 1px solid #2b344b;
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .refresh-btn:active { opacity: 0.75; }
+    .card {
+      background: #161b28;
+      border: 1px solid #22293b;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .asset-name { font-size: 15px; font-weight: 700; }
+    .asset-sub { font-size: 11px; color: #8b95a8; margin-top: 3px; }
+    .right { text-align: right; }
+    .price { font-size: 15px; font-weight: 700; }
+    .signal { font-size: 12px; font-weight: 800; margin-top: 3px; }
+    .buy { color: #00d395; }
+    .sell { color: #ff4d4f; }
+    .hold { color: #f5a623; }
+    .footer {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #8b95a8;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div>
+        <h1>AI CRYPTO SIGNALS</h1>
+        <div class="subtitle">SMART MARKET ANALYSIS</div>
+      </div>
+      <button class="refresh-btn" id="refreshBtn" onclick="loadMarket()">Refresh</button>
+    </div>
+
+    <div id="list">Loading live prices...</div>
+
+    <div class="footer">
+      <span id="statusText">Auto-refresh: 30s</span>
+      <span id="updatedText">--:--</span>
+    </div>
+  </div>
+
+  <script>
+    const TARGETS = {
+      BTC: { name: "Bitcoin", target: 90000, decimals: 0 },
+      ETH: { name: "Ethereum", target: 3500, decimals: 0 },
+      SOL: { name: "Solana", target: 190, decimals: 2 },
+      XAU: { name: "Gold", target: 2700, decimals: 2 }
+    };
+
+    function getSignal(price, target) {
+      if (price >= target) return { label: "BUY", cls: "buy" };
+      const diffRatio = (target - price) / target;
+      if (diffRatio <= 0.05) return { label: "HOLD", cls: "hold" };
+      return { label: "SELL", cls: "sell" };
+    }
+
+    function fmtPrice(num, decimals) {
+      return "$" + Number(num).toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    async function loadMarket() {
+      const btn = document.getElementById("refreshBtn");
+      const listEl = document.getElementById("list");
+      btn.textContent = "...";
+
+      try {
+        const cryptoRes = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd");
+        const cryptoData = await cryptoRes.json();
+
+        let goldPrice = 2650;
+        let goldMode = "demo gold";
+        try {
+          const goldRes = await fetch("https://api.gold-api.com/price/XAU");
+          const goldData = await goldRes.json();
+          if (goldData && goldData.price) {
+            goldPrice = Number(goldData.price);
+            goldMode = "live gold";
+          }
+        } catch (e) {}
+
+        const items = [
+          { symbol: "BTC", price: Number(cryptoData.bitcoin.usd), ...TARGETS.BTC },
+          { symbol: "ETH", price: Number(
