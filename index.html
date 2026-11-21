@@ -61,6 +61,15 @@
     .buy { color: #00d395; }
     .sell { color: #ff4d4f; }
     .hold { color: #f5a623; }
+    .status-box {
+      background: #161b28;
+      border: 1px solid #2a3246;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
     .footer {
       margin-top: 12px;
       font-size: 11px;
@@ -112,26 +121,92 @@
       });
     }
 
+    async function fetchWithTimeout(url, timeoutMs = 8000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { signal: controller.signal, cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return await res.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function renderCards(items) {
+      const listEl = document.getElementById("list");
+      listEl.innerHTML = items.map(item => {
+        const sig = getSignal(item.price, item.target);
+        return `
+          <div class="card">
+            <div>
+              <div class="asset-name">${item.name} (${item.symbol})</div>
+              <div class="asset-sub">Target: ${fmtPrice(item.target, item.decimals)}</div>
+            </div>
+            <div class="right">
+              <div class="price">${fmtPrice(item.price, item.decimals)}</div>
+              <div class="signal ${sig.cls}">${sig.label}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
     async function loadMarket() {
       const btn = document.getElementById("refreshBtn");
       const listEl = document.getElementById("list");
+      const statusText = document.getElementById("statusText");
+      const updatedText = document.getElementById("updatedText");
+
+      btn.disabled = true;
       btn.textContent = "...";
 
       try {
-        const cryptoRes = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd");
-        const cryptoData = await cryptoRes.json();
+        const cryptoData = await fetchWithTimeout(
+          "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd"
+        );
+
+        const btc = Number(cryptoData?.bitcoin?.usd);
+        const eth = Number(cryptoData?.ethereum?.usd);
+        const sol = Number(cryptoData?.solana?.usd);
+
+        if (!Number.isFinite(btc) || !Number.isFinite(eth) || !Number.isFinite(sol)) {
+          throw new Error("Invalid crypto price data");
+        }
 
         let goldPrice = 2650;
         let goldMode = "demo gold";
         try {
-          const goldRes = await fetch("https://api.gold-api.com/price/XAU");
-          const goldData = await goldRes.json();
-          if (goldData && goldData.price) {
+          const goldData = await fetchWithTimeout("https://api.gold-api.com/price/XAU", 6000);
+          if (goldData && Number.isFinite(Number(goldData.price))) {
             goldPrice = Number(goldData.price);
             goldMode = "live gold";
           }
-        } catch (e) {}
+        } catch (_) {
+          goldMode = "demo gold";
+        }
 
         const items = [
-          { symbol: "BTC", price: Number(cryptoData.bitcoin.usd), ...TARGETS.BTC },
-          { symbol: "ETH", price: Number(
+          { symbol: "BTC", price: btc, ...TARGETS.BTC },
+          { symbol: "ETH", price: eth, ...TARGETS.ETH },
+          { symbol: "SOL", price: sol, ...TARGETS.SOL },
+          { symbol: "XAU", price: goldPrice, ...TARGETS.XAU }
+        ];
+
+        renderCards(items);
+        statusText.textContent = `Auto-refresh: 30s • ${goldMode}`;
+        updatedText.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      } catch (err) {
+        listEl.innerHTML = `<div class="status-box">تعذر جلب الأسعار حالياً (${err.message || "Network error"}). اضغط Refresh لإعادة المحاولة.</div>`;
+        statusText.textContent = "Update failed";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Refresh";
+      }
+    }
+
+    loadMarket();
+    setInterval(loadMarket, 30000);
+  </script>
+</body>
+</html>
