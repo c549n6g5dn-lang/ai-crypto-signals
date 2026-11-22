@@ -38,6 +38,7 @@
     .upload { border: 1.5px dashed #33415d; background: #0d111a; border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; font-size: 12px; color: #cbd5e1; }
     .preview { width: 100%; max-height: 190px; object-fit: contain; border-radius: 10px; margin-top: 10px; display: none; background: #080b10; }
     .btn-main { width: 100%; background: #00d395; color: #06100c; border: none; border-radius: 11px; padding: 11px; font-size: 13px; font-weight: 800; cursor: pointer; }
+    .btn-main:disabled { opacity: 0.65; cursor: not-allowed; }
     .out { margin-top: 12px; background: #0d111a; border: 1px solid #263047; border-radius: 12px; padding: 12px; display: none; }
     .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
     .cell { background: #151b29; border-radius: 9px; padding: 8px; text-align: center; }
@@ -182,40 +183,74 @@
       r.readAsDataURL(f);
     }
 
-    function makeSignal() {
-      const k = document.getElementById("asset").value;
-      const a = ASSETS[k];
-      const val = parseFloat(document.getElementById("priceIn").value);
-      const entry = (Number.isFinite(val) && val > 0) ? val : a.price;
-
+    async function analyzeChartWithAI({ assetKey, assetName, price, chartDataUrl, sizeKb }) {
+      const a = ASSETS[assetKey];
       let action = "HOLD";
       let cls = "hold";
       let tpM = 1.025;
       let slM = 0.985;
 
-      if (entry >= a.target * 0.95 || (hasChart && fileSizeKb % 2 === 0)) {
+      const summary = chartDataUrl
+        ? `Chart attached (${sizeKb} KB) for ${assetName}. Prototype mode before connecting AI vision endpoint.`
+        : `Price-level evaluation for ${assetName} without chart image. Prototype mode.`;
+
+      if (price >= a.target * 0.95) {
         action = "BUY";
         cls = "buy";
-        tpM = k === "XAU" ? 1.018 : 1.045;
-        slM = k === "XAU" ? 0.991 : 0.978;
-      } else if (entry < a.target * 0.85 || hasChart) {
+        tpM = assetKey === "XAU" ? 1.018 : 1.045;
+        slM = assetKey === "XAU" ? 0.991 : 0.978;
+      } else if (price < a.target * 0.85) {
         action = "SELL";
         cls = "sell";
-        tpM = k === "XAU" ? 0.982 : 0.955;
-        slM = k === "XAU" ? 1.009 : 1.022;
+        tpM = assetKey === "XAU" ? 0.982 : 0.955;
+        slM = assetKey === "XAU" ? 1.009 : 1.022;
       }
 
-      document.getElementById("outPair").textContent = `${a.name} (${k}/USD)`;
-      const actEl = document.getElementById("outAction");
-      actEl.textContent = action;
-      actEl.className = cls;
-      document.getElementById("outEntry").textContent = fmt(entry, a.dec);
-      document.getElementById("outTp").textContent = fmt(entry * tpM, a.dec);
-      document.getElementById("outSl").textContent = fmt(entry * slM, a.dec);
-      document.getElementById("outNote").textContent = hasChart
-        ? `Chart attached (${fileSizeKb} KB) • Risk management recommended.`
-        : "No chart image attached • Signal generated from price level.";
-      document.getElementById("outBox").style.display = "block";
+      return {
+        action,
+        cls,
+        entry: price,
+        tp: price * tpM,
+        sl: price * slM,
+        note: `${summary} • For analytical purposes only, not financial advice.`
+      };
+    }
+
+    async function makeSignal() {
+      const k = document.getElementById("asset").value;
+      const a = ASSETS[k];
+      const val = parseFloat(document.getElementById("priceIn").value);
+      const entry = (Number.isFinite(val) && val > 0) ? val : a.price;
+      const imgEl = document.getElementById("prevImg");
+      const chartDataUrl = hasChart && imgEl.src ? imgEl.src : null;
+
+      const btn = document.querySelector(".btn-main");
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Analyzing...";
+
+      try {
+        const res = await analyzeChartWithAI({
+          assetKey: k,
+          assetName: a.name,
+          price: entry,
+          chartDataUrl,
+          sizeKb: fileSizeKb
+        });
+
+        document.getElementById("outPair").textContent = `${a.name} (${k}/USD)`;
+        const actEl = document.getElementById("outAction");
+        actEl.textContent = res.action;
+        actEl.className = res.cls;
+        document.getElementById("outEntry").textContent = fmt(res.entry, a.dec);
+        document.getElementById("outTp").textContent = fmt(res.tp, a.dec);
+        document.getElementById("outSl").textContent = fmt(res.sl, a.dec);
+        document.getElementById("outNote").textContent = res.note;
+        document.getElementById("outBox").style.display = "block";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
     }
 
     async function updatePrices() {
